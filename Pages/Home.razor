@@ -1,27 +1,40 @@
 ﻿@page "/"
 @using System.Globalization
 
-<h3 class="text-center mb-4">EMI Calculator with Detailed Breakdown</h3>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-12 text-center">
+            <img src="https://fnlsg.in/assets/images/ag_avatar.jpg" alt="Logo" class="img-fluid" style="width: 100px; height: 100px; border-radius: 50%;">
+        </div>
+    </div>
+</div>
 
-<div class="container">
+<div class="container mt-5">
     <div class="row">
-        <div class="col-md-6 offset-md-3">
+        <!-- Loan Input Form -->
+        <div class="col-lg-4 col-md-12 mb-4">
             <div class="card p-4 shadow-sm">
+                <h4 class="text-center">EMI Calculator</h4>
+
+                <!-- Loan Amount Input -->
                 <div class="form-group mb-3">
-                    <label for="productAmount">Loan Amount:</label>
+                    <label for="productAmount">Loan Amount (₹):</label>
                     <input id="productAmount" type="number" class="form-control" @bind="LoanAmount" placeholder="Enter Loan Amount" />
                 </div>
 
+                <!-- Tenure Input -->
                 <div class="form-group mb-3">
                     <label for="tenure">Tenure (Months):</label>
                     <input id="tenure" type="number" class="form-control" @bind="Tenure" placeholder="Enter Tenure in Months" />
                 </div>
 
+                <!-- Interest Rate Input -->
                 <div class="form-group mb-3">
                     <label for="interestRate">Annual Interest Rate (%):</label>
                     <input id="interestRate" type="number" class="form-control" @bind="InterestRate" placeholder="Enter Interest Rate" />
                 </div>
 
+                <!-- EMI Type Selector -->
                 <div class="form-group mb-3">
                     <label for="emiType">EMI Type:</label>
                     <select id="emiType" class="form-control" @bind="EmiType">
@@ -30,6 +43,7 @@
                     </select>
                 </div>
 
+                <!-- Processing Fee Type Selector -->
                 <div class="form-group mb-3">
                     <label for="processingFeeType">Processing Fee Type:</label>
                     <select id="processingFeeType" class="form-control" @bind="ProcessingFeeType">
@@ -38,74 +52,79 @@
                     </select>
                 </div>
 
+                <!-- Processing Fee Input -->
                 <div class="form-group mb-3">
                     <label for="processingFee">Processing Fee (@ProcessingFeeType):</label>
                     <input id="processingFee" type="number" class="form-control" @bind="ProcessingFee" placeholder="Enter Processing Fee" />
                 </div>
 
-                <button class="btn btn-primary btn-block" @onclick="CalculateEMIBreakdown">Calculate EMI</button>
+                <!-- Calculate EMI Button -->
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary" @onclick="CalculateEMIBreakdown">Calculate EMI</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    @if (emiBreakdown.Count > 0)
-    {
-        <div class="row mt-5">
-            <div class="col-md-8 offset-md-2">
+        <!-- EMI Breakdown Section -->
+        @if (emiBreakdown.Count > 0)
+        {
+            <div class="col-lg-8 col-md-12">
                 <div class="card p-4 shadow-sm">
                     <h4 class="text-center">EMI Breakdown</h4>
                     <hr />
 
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Installment No.</th>
-                                <th>Billing Date</th>
-                                <th>Outstanding Principal (₹)</th>
-                                <th>Principal (₹)</th>
-                                <th>Interest (₹)</th>
-                                <th>GST on Interest (₹)</th>
-                                <th>EMI Amount (₹)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var emi in emiBreakdown)
-                            {
+                    <div class="table-responsive">
+                        <table class="table table-bordered text-center">
+                            <thead>
                                 <tr>
-                                    <td>@emi.InstallmentNo</td>
-                                    <td>@emi.BillingDate.ToString("dd-MM-yyyy")</td>
-                                    <td>@emi.OutstandingPrincipal.ToString("F2", CultureInfo.InvariantCulture)</td>
-                                    <td>@emi.PrincipalPaid.ToString("F2", CultureInfo.InvariantCulture)</td>
-                                    <td>@emi.InterestPaid.ToString("F2", CultureInfo.InvariantCulture)</td>
-                                    <td>@emi.GSTOnInterest.ToString("F2", CultureInfo.InvariantCulture)</td>
-                                    <td>@emi.EMIAmount.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                    <th>Installment No.</th>
+                                    <th>Billing Date</th>
+                                    <th>Outstanding Principal (₹)</th>
+                                    <th>Principal (₹)</th>
+                                    <th>Interest (₹)</th>
+                                    <th>GST on Interest (₹)</th>
+                                    <th>EMI Amount (₹)</th>
                                 </tr>
-                            }
-                            <tr class="font-weight-bold">
-                                <td colspan="3" class="text-right">Total:</td>
-                                <td>@totalPrincipalPaid.ToString("F2", CultureInfo.InvariantCulture)</td>
-                                <td>@totalInterestPaid.ToString("F2", CultureInfo.InvariantCulture)</td>
-                                <td>@totalGSTOnInterest.ToString("F2", CultureInfo.InvariantCulture)</td>
-                                <td>@totalEMIAmount.ToString("F2", CultureInfo.InvariantCulture)</td>
-                            </tr>
-                            <tr class="font-weight-bold">
-                                <td colspan="3" class="text-right">Processing Fee:</td>
-                                <td colspan="4">@processingFee.ToString("F2", CultureInfo.InvariantCulture)</td>
-                            </tr>
-                            <tr class="font-weight-bold">
-                                <td colspan="3" class="text-right">GST on Processing Fee:</td>
-                                <td colspan="4">@gstOnProcessingFee.ToString("F2", CultureInfo.InvariantCulture)</td>
-                            </tr>
-                            <tr class="font-weight-bold">
-                                <td colspan="3" class="text-right">Total Payable (Including Processing Fee and GST):</td>
-                                <td colspan="4">@totalPayable.ToString("F2", CultureInfo.InvariantCulture)</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @foreach (var emi in emiBreakdown)
+                                {
+                                    <tr>
+                                        <td>@emi.InstallmentNo</td>
+                                        <td>@emi.BillingDate.ToString("dd-MM-yyyy")</td>
+                                        <td>@emi.OutstandingPrincipal.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                        <td>@emi.PrincipalPaid.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                        <td>@emi.InterestPaid.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                        <td>@emi.GSTOnInterest.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                        <td>@emi.EMIAmount.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                    </tr>
+                                }
+                                <tr class="font-weight-bold">
+                                    <td colspan="3" class="text-right">Total:</td>
+                                    <td>@totalPrincipalPaid.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                    <td>@totalInterestPaid.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                    <td>@totalGSTOnInterest.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                    <td>@totalEMIAmount.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                </tr>
+                                <tr class="font-weight-bold">
+                                    <td colspan="3" class="text-right">Processing Fee:</td>
+                                    <td colspan="4">@processingFee.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                </tr>
+                                <tr class="font-weight-bold">
+                                    <td colspan="3" class="text-right">GST on Processing Fee:</td>
+                                    <td colspan="4">@gstOnProcessingFee.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                </tr>
+                                <tr class="font-weight-bold">
+                                    <td colspan="3" class="text-right">Total Payable (Including Processing Fee and GST):</td>
+                                    <td colspan="4">@totalPayable.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
-    }
+        }
+    </div>
 </div>
 
 @code {
