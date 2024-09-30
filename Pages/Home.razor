@@ -1,0 +1,214 @@
+﻿@page "/"
+@using System.Globalization
+
+<h3 class="text-center mb-4">EMI Calculator with Detailed Breakdown</h3>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card p-4 shadow-sm">
+                <div class="form-group mb-3">
+                    <label for="productAmount">Loan Amount:</label>
+                    <input id="productAmount" type="number" class="form-control" @bind="LoanAmount" placeholder="Enter Loan Amount" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="tenure">Tenure (Months):</label>
+                    <input id="tenure" type="number" class="form-control" @bind="Tenure" placeholder="Enter Tenure in Months" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="interestRate">Annual Interest Rate (%):</label>
+                    <input id="interestRate" type="number" class="form-control" @bind="InterestRate" placeholder="Enter Interest Rate" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="emiType">EMI Type:</label>
+                    <select id="emiType" class="form-control" @bind="EmiType">
+                        <option value="No-Cost EMI">No-Cost EMI</option>
+                        <option value="EMI">EMI</option>
+                    </select>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="processingFeeType">Processing Fee Type:</label>
+                    <select id="processingFeeType" class="form-control" @bind="ProcessingFeeType">
+                        <option value="Fixed">Fixed Amount</option>
+                        <option value="Percentage">Percentage</option>
+                    </select>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="processingFee">Processing Fee (@ProcessingFeeType):</label>
+                    <input id="processingFee" type="number" class="form-control" @bind="ProcessingFee" placeholder="Enter Processing Fee" />
+                </div>
+
+                <button class="btn btn-primary btn-block" @onclick="CalculateEMIBreakdown">Calculate EMI</button>
+            </div>
+        </div>
+    </div>
+
+    @if (emiBreakdown.Count > 0)
+    {
+        <div class="row mt-5">
+            <div class="col-md-8 offset-md-2">
+                <div class="card p-4 shadow-sm">
+                    <h4 class="text-center">EMI Breakdown</h4>
+                    <hr />
+
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Installment No.</th>
+                                <th>Billing Date</th>
+                                <th>Outstanding Principal (₹)</th>
+                                <th>Principal (₹)</th>
+                                <th>Interest (₹)</th>
+                                <th>GST on Interest (₹)</th>
+                                <th>EMI Amount (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var emi in emiBreakdown)
+                            {
+                                <tr>
+                                    <td>@emi.InstallmentNo</td>
+                                    <td>@emi.BillingDate.ToString("dd-MM-yyyy")</td>
+                                    <td>@emi.OutstandingPrincipal.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                    <td>@emi.PrincipalPaid.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                    <td>@emi.InterestPaid.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                    <td>@emi.GSTOnInterest.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                    <td>@emi.EMIAmount.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                </tr>
+                            }
+                            <tr class="font-weight-bold">
+                                <td colspan="3" class="text-right">Total:</td>
+                                <td>@totalPrincipalPaid.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                <td>@totalInterestPaid.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                <td>@totalGSTOnInterest.ToString("F2", CultureInfo.InvariantCulture)</td>
+                                <td>@totalEMIAmount.ToString("F2", CultureInfo.InvariantCulture)</td>
+                            </tr>
+                            <tr class="font-weight-bold">
+                                <td colspan="3" class="text-right">Processing Fee:</td>
+                                <td colspan="4">@processingFee.ToString("F2", CultureInfo.InvariantCulture)</td>
+                            </tr>
+                            <tr class="font-weight-bold">
+                                <td colspan="3" class="text-right">GST on Processing Fee:</td>
+                                <td colspan="4">@gstOnProcessingFee.ToString("F2", CultureInfo.InvariantCulture)</td>
+                            </tr>
+                            <tr class="font-weight-bold">
+                                <td colspan="3" class="text-right">Total Payable (Including Processing Fee and GST):</td>
+                                <td colspan="4">@totalPayable.ToString("F2", CultureInfo.InvariantCulture)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private double LoanAmount;
+    private int Tenure = 6;
+    private double InterestRate = 12;  // Annual interest rate in %
+    private double EMIAmount = 0;
+    private string EmiType = "No-Cost EMI";  // Default selection is No-Cost EMI
+
+    private string ProcessingFeeType = "Fixed";  // Default processing fee type is Fixed
+    private double ProcessingFee = 199;  // Default processing fee
+
+    private double processingFee = 0;  // This will store the calculated processing fee
+    private double gstOnProcessingFee = 0; // GST on processing fee
+    private double totalPayable = 0;   // Total payable amount (including processing fee and GST)
+
+    private List<EMI> emiBreakdown = new();
+
+    private double totalPrincipalPaid = 0;
+    private double totalInterestPaid = 0;
+    private double totalGSTOnInterest = 0;
+    private double totalEMIAmount = 0;
+
+    // Class to store EMI details for each installment
+    public class EMI
+    {
+        public int InstallmentNo { get; set; }
+        public DateTime BillingDate { get; set; }
+        public double OutstandingPrincipal { get; set; }
+        public double PrincipalPaid { get; set; }
+        public double InterestPaid { get; set; }
+        public double GSTOnInterest { get; set; }  // GST added to interest
+        public double EMIAmount { get; set; }
+    }
+
+    private void CalculateEMIBreakdown()
+    {
+        emiBreakdown.Clear();
+        totalPrincipalPaid = 0;
+        totalInterestPaid = 0;
+        totalGSTOnInterest = 0;
+        totalEMIAmount = 0;
+
+        // Calculate Monthly Interest Rate
+        double monthlyInterestRate = (InterestRate / 100) / 12;
+
+        // Calculate EMI using the formula
+        EMIAmount = (LoanAmount * monthlyInterestRate * Math.Pow(1 + monthlyInterestRate, Tenure)) /
+                    (Math.Pow(1 + monthlyInterestRate, Tenure) - 1);
+
+        double outstandingPrincipal = LoanAmount;
+        DateTime billingDate = DateTime.Now.AddMonths(1);  // Set the billing date
+
+        for (int i = 1; i <= Tenure; i++)
+        {
+            double interestPaid = outstandingPrincipal * monthlyInterestRate;
+            double principalPaid = EMIAmount - interestPaid;
+            double gstOnInterest = interestPaid * 0.18;  // 18% GST on interest
+
+            emiBreakdown.Add(new EMI
+                {
+                    InstallmentNo = i,
+                    BillingDate = billingDate,
+                    OutstandingPrincipal = outstandingPrincipal,
+                    PrincipalPaid = principalPaid,
+                    InterestPaid = interestPaid,
+                    GSTOnInterest = gstOnInterest,
+                    EMIAmount = EMIAmount
+                });
+
+            // Update total calculations
+            totalPrincipalPaid += principalPaid;
+            totalInterestPaid += interestPaid;
+            totalGSTOnInterest += gstOnInterest;
+            totalEMIAmount += EMIAmount;
+
+            // Reduce the outstanding principal
+            outstandingPrincipal -= principalPaid;
+
+            // Increment billing date by 1 month
+            billingDate = billingDate.AddMonths(1);
+        }
+
+        // Calculate the processing fee
+        if (ProcessingFeeType == "Fixed")
+        {
+            processingFee = ProcessingFee;
+        }
+        else if (ProcessingFeeType == "Percentage")
+        {
+            processingFee = (ProcessingFee / 100) * LoanAmount;
+        }
+
+        // Calculate GST on processing fee
+        gstOnProcessingFee = processingFee * 0.18;  // 18% GST
+
+        // Calculate the total payable amount
+        totalPayable = totalEMIAmount + totalGSTOnInterest + processingFee + gstOnProcessingFee;
+
+        // For No-Cost EMI, subtract total interest from the total payable amount
+        if (EmiType == "No-Cost EMI")
+        {
+            totalPayable -= totalInterestPaid;
+        }
+    }
+}
