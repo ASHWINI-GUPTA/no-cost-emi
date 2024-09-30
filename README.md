@@ -12,7 +12,7 @@ This Blazor application allows users to calculate and view a detailed breakdown 
 
 ## Requirements
 
-- [.NET 6 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)
+- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) (Server-Side)
 - [Bootstrap](https://getbootstrap.com/) for UI styling
 
@@ -53,13 +53,13 @@ This Blazor application allows users to calculate and view a detailed breakdown 
 
 Once the calculation is complete, you will see a table with the following details:
 
-- **Installment No.**: The number of the installment (e.g., 1, 2, 3...).
+- **Instalment No.**: The number of the instalment (e.g., 1, 2, 3...).
 - **Billing Date**: The date when each EMI is due.
-- **Outstanding Principal**: The remaining loan balance before the installment.
+- **Outstanding Principal**: The remaining loan balance before the instalment.
 - **Principal**: The amount of the EMI that goes toward repaying the loan.
 - **Interest**: The interest portion of the EMI.
 - **GST on Interest**: 18% GST applied to the interest.
-- **EMI Amount**: The total amount of each EMI installment.
+- **EMI Amount**: The total amount of each EMI instalment.
 - **Processing Fee**: Added as a row at the bottom of the table with GST applied.
 
 ### No-Cost EMI
