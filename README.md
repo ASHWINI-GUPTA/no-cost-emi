@@ -76,5 +76,5 @@ Feel free to submit issues or pull requests if you have any improvements or sugg
 
 ## Contact
 
-For any queries, reach out via [ashwini@fnlsg.in](ashwini@fnlsg.in).
+For any queries, reach out via [ashwini@fnlsg.in](mailto:ashwini@fnlsg.in).
 
